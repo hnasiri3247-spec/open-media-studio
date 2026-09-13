@@ -31,6 +31,17 @@ jobs:
       - name: Build debug APK
         run: gradle -p android assembleDebug --stacktrace
 
+      - name: Inspect APK output
+        run: |
+          echo "APK outputs:"
+          find android/app/build/outputs -type f -printf '%p %s bytes\n'
+          echo "Debug APK:"
+          ls -lh android/app/build/outputs/apk/debug/ || true
+          echo "File type:"
+          file android/app/build/outputs/apk/debug/app-debug.apk || true
+          echo "APK contents:"
+          unzip -l android/app/build/outputs/apk/debug/app-debug.apk | head -50
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
