@@ -6,7 +6,7 @@ on:
     branches: [main]
 
 jobs:
-  backend-test:
+  backend-integration-test:
     runs-on: ubuntu-latest
 
     steps:
@@ -36,10 +36,121 @@ jobs:
           echo $! > backend.pid
           sleep 5
 
-      - name: Test API health
+      - name: Backend health
         run: |
           cat backend.log
           curl --fail --show-error http://127.0.0.1:8000/api/health
+
+      - name: Create test project
+        run: |
+          curl --fail --show-error \
+            -X POST \
+            -H "Content-Type: application/json" \
+            -d '{"title":"Integration Test","script":"Real API integration test","format":"16:9","duration":10,"style":"test"}' \
+            http://127.0.0.1:8000/api/projects \
+            > project.json
+
+          cat project.json
+
+          python - <<'PY'
+          import json
+          p = json.load(open("project.json"))
+          assert p["id"]
+          print("PROJECT_ID=" + p["id"])
+          PY
+
+          python -c 'import json; print(json.load(open("project.json"))["id"])' > project_id.txt
+
+      - name: Test Kokoro through Backend
+        run: |
+          PID=$(cat project_id.txt)
+
+          curl --fail --show-error \
+            --max-time 300 \
+            -X POST \
+            -H "Content-Type: application/json" \
+            -d '{"text":"This is a real Kokoro integration test.","voice":"af_sarah"}' \
+            "http://127.0.0.1:8000/api/projects/$PID/voice" \
+            > voice.json
+
+          cat voice.json
+
+          python - <<'PY'
+          import json
+          p=json.load(open("voice.json"))
+          assert p["audio"]
+          assert any(x.get("type")=="voice" for x in p["audio"])
+          print("Kokoro: PASS")
+          PY
+
+      - name: Test MusicGen through Backend
+        run: |
+          PID=$(cat project_id.txt)
+
+          curl --fail --show-error \
+            --max-time 600 \
+            -X POST \
+            -H "Content-Type: application/json" \
+            -d '{"prompt":"upbeat instrumental music, energetic rhythm, cinematic pop","duration":10}' \
+            "http://127.0.0.1:8000/api/projects/$PID/music" \
+            > music.json
+
+          cat music.json
+
+          python - <<'PY'
+          import json
+          p=json.load(open("music.json"))
+          assert any(x.get("type")=="music" for x in p["audio"])
+          print("MusicGen: PASS")
+          PY
+
+      - name: Test AudioGen through Backend
+        run: |
+          PID=$(cat project_id.txt)
+
+          curl --fail --show-error \
+            --max-time 600 \
+            -X POST \
+            -H "Content-Type: application/json" \
+            -d '{"prompt":"realistic thunder and heavy rain, cinematic sound effect","duration":5}' \
+            "http://127.0.0.1:8000/api/projects/$PID/sfx" \
+            > sfx.json
+
+          cat sfx.json
+
+          python - <<'PY'
+          import json
+          p=json.load(open("sfx.json"))
+          assert any(x.get("type")=="sfx" for x in p["audio"])
+          print("AudioGen: PASS")
+          PY
+
+      - name: Test Wan 2.2 through Backend
+        run: |
+          PID=$(cat project_id.txt)
+
+          curl --fail --show-error \
+            --max-time 1200 \
+            -X POST \
+            -H "Content-Type: application/json" \
+            -d '{"prompt":"a cinematic shot of a small red bird flying over a green forest at sunset","duration":3}' \
+            "http://127.0.0.1:8000/api/projects/$PID/scenes" \
+            > scene.json
+
+          cat scene.json
+
+          python - <<'PY'
+          import json
+          p=json.load(open("scene.json"))
+          assert p["scenes"]
+          assert p["scenes"][0]["media"]
+          print("Wan 2.2: PASS")
+          PY
+
+      - name: Show backend log on failure
+        if: failure()
+        run: |
+          cat backend.log || true
 
       - name: Stop backend
         if: always()
