@@ -61,6 +61,12 @@ jobs:
 
           python -c 'import json; print(json.load(open("project.json"))["id"])' > project_id.txt
 
+      - name: Test Kokoro network from runner
+        run: |
+          echo "===== KOKORO NETWORK TEST ====="
+          curl -I --connect-timeout 30 --max-time 60 https://kinabraytan-kokoro-tts-server.hf.space/gradio_api/info || true
+          echo "================================"
+
       - name: Test Kokoro through Backend
         run: |
           PID=$(cat project_id.txt)
