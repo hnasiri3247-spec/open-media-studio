@@ -76,7 +76,15 @@ jobs:
           echo "===== KOKORO BACKEND RESPONSE ====="
           cat voice.json
           echo "==================================="
-          test -s voice.json
+
+          echo "===== BACKEND LOG AFTER KOKORO ====="
+          cat backend.log
+          echo "===================================="
+
+          grep -q '"audio"' voice.json || {
+            echo "Kokoro backend returned an invalid response."
+            exit 1
+          }
 
           cat voice.json
 
