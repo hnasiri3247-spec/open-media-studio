@@ -1,0 +1,15 @@
+.venv/
+__pycache__/
+.pytest_cache/
+.env
+storage/*
+!storage/.gitkeep
+*.pyc
+.idea/
+.vscode/
+.DS_Store
+android/.gradle/
+android/build/
+android/app/build/
+*.apk
+*.aab
