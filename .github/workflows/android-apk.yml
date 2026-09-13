@@ -31,19 +31,29 @@ jobs:
       - name: Build debug APK
         run: gradle -p android assembleDebug --stacktrace
 
-      - name: Inspect APK output
+      - name: Create APK report
         run: |
-          echo "APK outputs:"
-          find android/app/build/outputs -type f -printf '%p %s bytes\n'
-          echo "Debug APK:"
-          ls -lh android/app/build/outputs/apk/debug/ || true
-          echo "File type:"
-          file android/app/build/outputs/apk/debug/app-debug.apk || true
-          echo "APK contents:"
-          unzip -l android/app/build/outputs/apk/debug/app-debug.apk | head -50
+          APK="android/app/build/outputs/apk/debug/app-debug.apk"
+          {
+            echo "APK path: $APK"
+            echo "APK exists:"
+            test -f "$APK" && echo "YES" || echo "NO"
+            echo "APK size:"
+            stat -c "%s bytes" "$APK"
+            echo "File type:"
+            file "$APK"
+            echo "Directory listing:"
+            find android/app/build/outputs -type f -printf "%p %s bytes\n"
+          } > apk-report.txt
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: open-media-studio-debug-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Upload APK report
+        uses: actions/upload-artifact@v4
+        with:
+          name: apk-report
+          path: apk-report.txt
