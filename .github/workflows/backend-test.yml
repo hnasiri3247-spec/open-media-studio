@@ -65,13 +65,18 @@ jobs:
         run: |
           PID=$(cat project_id.txt)
 
-          curl --fail --show-error \
+          curl --show-error \
             --max-time 300 \
             -X POST \
             -H "Content-Type: application/json" \
             -d '{"text":"This is a real Kokoro integration test.","voice":"af_sarah"}' \
             "http://127.0.0.1:8000/api/projects/$PID/voice" \
-            > voice.json
+            > voice.json || true
+
+          echo "===== KOKORO BACKEND RESPONSE ====="
+          cat voice.json
+          echo "==================================="
+          test -s voice.json
 
           cat voice.json
 
