@@ -60,6 +60,8 @@ class VoiceProvider:
             async with client.stream(
                 "GET",
                 f"{KOKORO_URL}/gradio_api/call/generate_speech/{event_id}",
+                headers={"Accept": "text/event-stream"},
+                timeout=300,
             ) as stream:
 
                 stream.raise_for_status()
@@ -110,3 +112,5 @@ class VoiceProvider:
                 urls.extend(self._find_urls(value))
 
         return urls
+
+
