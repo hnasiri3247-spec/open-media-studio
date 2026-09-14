@@ -88,6 +88,13 @@ jobs:
           asyncio.run(main())
           PY2
 
+      - name: Test Kokoro direct API curl
+        run: |
+          curl -v --max-time 120 \
+          -H "Content-Type: application/json" \
+          -d '{"data":["hello from curl","af_sarah",1.0]}' \
+          https://kinabraytan-kokoro-tts-server.hf.space/gradio_api/call/generate_speech || true
+
       - name: Test Kokoro through Backend
         run: |
           PID=$(cat project_id.txt)
