@@ -67,6 +67,27 @@ jobs:
           curl -sS -L --connect-timeout 30 --max-time 90 https://kinabraytan-kokoro-tts-server.hf.space/gradio_api/info || true
           echo "================================"
 
+      - name: Test Python httpx to Kokoro
+        run: |
+          python - <<'PY2'
+          import asyncio
+          import httpx
+
+          async def main():
+              try:
+                  async with httpx.AsyncClient(timeout=30) as client:
+                      r = await client.get(
+                          "https://kinabraytan-kokoro-tts-server.hf.space/gradio_api/info"
+                      )
+                      print("STATUS:", r.status_code)
+                      print("BODY:", r.text[:500])
+              except Exception as e:
+                  print("ERROR TYPE:", type(e).__name__)
+                  print("ERROR:", repr(e))
+
+          asyncio.run(main())
+          PY2
+
       - name: Test Kokoro through Backend
         run: |
           PID=$(cat project_id.txt)
