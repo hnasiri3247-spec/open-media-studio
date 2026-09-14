@@ -88,6 +88,30 @@ jobs:
           asyncio.run(main())
           PY2
 
+      - name: Test Python httpx POST to Kokoro
+        run: |
+          python - <<'PY2'
+          import asyncio
+          import httpx
+
+          async def main():
+              url = "https://kinabraytan-kokoro-tts-server.hf.space/gradio_api/call/generate_speech"
+              payload = {"data": ["hello from GitHub httpx POST", "af_sarah", 1.0}
+
+              try:
+                  async with httpx.AsyncClient(timeout=120, http2=False) as client:
+                      r = await client.post(url, json=payload)
+                      print("STATUS:", r.status_code)
+                      print("BODY:", r.text)
+                      r.raise_for_status()
+              except Exception as e:
+                  print("ERROR TYPE:", type(e).__name__)
+                  print("ERROR:", repr(e))
+                  raise
+
+          asyncio.run(main())
+          PY2
+
       - name: Test Kokoro direct API curl
         run: |
           curl -v --max-time 120 \
