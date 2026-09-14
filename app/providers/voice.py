@@ -4,7 +4,9 @@ from pathlib import Path
 
 import httpx
 
-from ..config import KOKORO_URL, MOCK_MODE, ASSETS_DIR
+from ..config import MOCK_MODE, ASSETS_DIR
+
+PIPER_URL = "https://gyroing-persian-tts-piper.hf.space"
 
 
 class VoiceProvider:
@@ -14,7 +16,7 @@ class VoiceProvider:
 
         async with httpx.AsyncClient(timeout=20) as client:
             try:
-                r = await client.get(f"{KOKORO_URL}/gradio_api/info")
+                r = await client.get(f"{PIPER_URL}/gradio_api/info")
                 return {
                     "status": "online" if r.status_code < 400 else "offline"
                 }
@@ -50,7 +52,7 @@ class VoiceProvider:
 
         async with httpx.AsyncClient(timeout=300) as client:
             r = await client.post(
-                f"{KOKORO_URL}/gradio_api/call/generate_speech",
+                f"{PIPER_URL}/gradio_api/call/synthesize_speech",
                 json=payload,
             )
             r.raise_for_status()
@@ -63,7 +65,7 @@ class VoiceProvider:
             ) as sse_client:
                 async with sse_client.stream(
                     "GET",
-                    f"{KOKORO_URL}/gradio_api/call/generate_speech/{event_id}",
+                    f"{PIPER_URL}/gradio_api/call/synthesize_speech/{event_id}",
                     headers={"Accept": "text/event-stream"},
                 ) as stream:
 
@@ -89,7 +91,7 @@ class VoiceProvider:
                             audio_url = urls[0]
 
                             if audio_url.startswith("/"):
-                                audio_url = f"{KOKORO_URL}{audio_url}"
+                                audio_url = f"{PIPER_URL}{audio_url}"
 
                             audio = await client.get(audio_url)
                             audio.raise_for_status()
