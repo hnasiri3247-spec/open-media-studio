@@ -61,13 +61,13 @@ jobs:
 
           python -c 'import json; print(json.load(open("project.json"))["id"])' > project_id.txt
 
-      - name: Test Kokoro network from runner
+      - name: Test Piper network from runner
         run: |
-          echo "===== KOKORO NETWORK TEST ====="
-          curl -sS -L --connect-timeout 30 --max-time 90 https://kinabraytan-kokoro-tts-server.hf.space/gradio_api/info || true
+          echo "===== PIPER NETWORK TEST ====="
+          curl -sS -L --connect-timeout 30 --max-time 90 https://gyroing-persian-tts-piper.hf.space/gradio_api/info || true
           echo "================================"
 
-      - name: Test Python httpx to Kokoro
+      - name: Test Python httpx to Piper
         run: |
           python - <<'PY2'
           import asyncio
@@ -77,7 +77,7 @@ jobs:
               try:
                   async with httpx.AsyncClient(timeout=30) as client:
                       r = await client.get(
-                          "https://kinabraytan-kokoro-tts-server.hf.space/gradio_api/info"
+                          "https://gyroing-persian-tts-piper.hf.space/gradio_api/info"
                       )
                       print("STATUS:", r.status_code)
                       print("BODY:", r.text[:500])
@@ -88,15 +88,15 @@ jobs:
           asyncio.run(main())
           PY2
 
-      - name: Test Python httpx POST to Kokoro
+      - name: Test Python httpx POST to Piper
         run: |
           python - <<'PY2'
           import asyncio
           import httpx
 
           async def main():
-              url = "https://kinabraytan-kokoro-tts-server.hf.space/gradio_api/call/generate_speech"
-              payload = {"data": ["hello from GitHub httpx POST", "af_sarah", 1.0}
+              url = "https://gyroing-persian-tts-piper.hf.space/gradio_api/call/synthesize_speech"
+              payload = {"data": ["hello from GitHub httpx POST", "", 1.0}
 
               try:
                   async with httpx.AsyncClient(timeout=120, http2=False) as client:
@@ -112,14 +112,14 @@ jobs:
           asyncio.run(main())
           PY2
 
-      - name: Test Kokoro direct API curl
+      - name: Test Piper direct API curl
         run: |
           curl -v --max-time 120 \
           -H "Content-Type: application/json" \
-          -d '{"data":["hello from curl","af_sarah",1.0]}' \
-          https://kinabraytan-kokoro-tts-server.hf.space/gradio_api/call/generate_speech || true
+          -d '{"data":["hello from curl","",1.0]}' \
+          https://gyroing-persian-tts-piper.hf.space/gradio_api/call/synthesize_speech || true
 
-      - name: Test Kokoro through Backend
+      - name: Test Piper through Backend
         run: |
           PID=$(cat project_id.txt)
 
@@ -127,20 +127,20 @@ jobs:
             --max-time 300 \
             -X POST \
             -H "Content-Type: application/json" \
-            -d '{"text":"This is a real Kokoro integration test.","voice":"af_sarah"}' \
+            -d '{"text":"This is a real Piper integration test.","voice":""}' \
             "http://127.0.0.1:8000/api/projects/$PID/voice" \
             > voice.json || true
 
-          echo "===== KOKORO BACKEND RESPONSE ====="
+          echo "===== PIPER BACKEND RESPONSE ====="
           cat voice.json
           echo "==================================="
 
-          echo "===== BACKEND LOG AFTER KOKORO ====="
+          echo "===== BACKEND LOG AFTER PIPER ====="
           cat backend.log
           echo "===================================="
 
           grep -q '"audio"' voice.json || {
-            echo "Kokoro backend returned an invalid response."
+            echo "Piper backend returned an invalid response."
             exit 1
           }
 
@@ -151,7 +151,7 @@ jobs:
           p=json.load(open("voice.json"))
           assert p["audio"]
           assert any(x.get("type")=="voice" for x in p["audio"])
-          print("Kokoro: PASS")
+          print("Piper: PASS")
           PY
 
       - name: Test MusicGen through Backend
