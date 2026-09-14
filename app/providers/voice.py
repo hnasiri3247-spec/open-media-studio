@@ -57,42 +57,45 @@ class VoiceProvider:
 
             event_id = r.json()["event_id"]
 
-            async with client.stream(
-                "GET",
-                f"{KOKORO_URL}/gradio_api/call/generate_speech/{event_id}",
-                headers={"Accept": "text/event-stream"},
+            async with httpx.AsyncClient(
                 timeout=300,
-            ) as stream:
+                http2=False,
+            ) as sse_client:
+                async with sse_client.stream(
+                    "GET",
+                    f"{KOKORO_URL}/gradio_api/call/generate_speech/{event_id}",
+                    headers={"Accept": "text/event-stream"},
+                ) as stream:
 
-                stream.raise_for_status()
+                    stream.raise_for_status()
 
-                async for line in stream.aiter_lines():
-                    if not line.startswith("data:"):
-                        continue
+                    async for line in stream.aiter_lines():
+                        if not line.startswith("data:"):
+                            continue
 
-                    raw = line[5:].strip()
+                        raw = line[5:].strip()
 
-                    if not raw or raw == "null":
-                        continue
+                        if not raw or raw == "null":
+                            continue
 
-                    try:
-                        data = json.loads(raw)
-                    except json.JSONDecodeError:
-                        continue
+                        try:
+                            data = json.loads(raw)
+                        except json.JSONDecodeError:
+                            continue
 
-                    urls = self._find_urls(data)
+                        urls = self._find_urls(data)
 
-                    if urls:
-                        audio_url = urls[0]
+                        if urls:
+                            audio_url = urls[0]
 
-                        if audio_url.startswith("/"):
-                            audio_url = f"{KOKORO_URL}{audio_url}"
+                            if audio_url.startswith("/"):
+                                audio_url = f"{KOKORO_URL}{audio_url}"
 
-                        audio = await client.get(audio_url)
-                        audio.raise_for_status()
+                            audio = await client.get(audio_url)
+                            audio.raise_for_status()
 
-                        out.write_bytes(audio.content)
-                        return out
+                            out.write_bytes(audio.content)
+                            return out
 
         raise RuntimeError("Kokoro returned no audio file")
 
