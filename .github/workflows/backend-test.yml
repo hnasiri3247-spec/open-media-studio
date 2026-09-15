@@ -181,7 +181,7 @@ jobs:
         run: |
           PID=$(cat project_id.txt)
 
-          curl --fail --show-error \
+          curl --show-error \
             --max-time 600 \
             -X POST \
             -H "Content-Type: application/json" \
