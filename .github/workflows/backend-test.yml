@@ -164,7 +164,7 @@ jobs:
             -H "Content-Type: application/json" \
             -d '{"prompt":"upbeat instrumental music, energetic rhythm, cinematic pop","duration":10}' \
             "http://127.0.0.1:8000/api/projects/$PID/music" \
-            > music.json
+            > music.json || { echo "===== MUSICGEN REQUEST FAILED ====="; cat music.json || true; echo "===== BACKEND LOG AFTER MUSICGEN FAILURE ====="; cat backend.log || true; echo "=============================================="; exit 1; }
 
           cat music.json
 
