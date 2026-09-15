@@ -38,6 +38,13 @@ jobs:
         run: |
           python -m compileall app
 
+      - name: Verify FFmpeg
+        run: |
+          FFMPEG_PATH="$(command -v ffmpeg)"
+          echo "FFMPEG_PATH=$FFMPEG_PATH"
+          echo "FFMPEG_BIN=$FFMPEG_PATH" >> "$GITHUB_ENV"
+          "$FFMPEG_PATH" -version
+
       - name: Start backend
         env:
           MOCK_MODE: "false"
