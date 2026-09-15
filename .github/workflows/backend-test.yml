@@ -96,7 +96,7 @@ jobs:
 
           async def main():
               url = "https://gyroing-persian-tts-piper.hf.space/gradio_api/call/synthesize_speech"
-              payload = {"data": ["hello from GitHub httpx POST", "", 1.0}
+              payload = {"data": ["hello from GitHub httpx POST", "", 1.0]}
 
               try:
                   async with httpx.AsyncClient(timeout=120, http2=False) as client:
