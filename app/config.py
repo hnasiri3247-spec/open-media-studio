@@ -15,7 +15,7 @@ PORT = int(os.getenv("PORT", "8000"))
 
 WAN_URL = os.getenv(
     "WAN_URL",
-    "https://alexcheng0072-free-video-generator.hf.space"
+    "https://openking-wan2-video-generation.hf.space"
 ).rstrip("/")
 
 KOKORO_URL = os.getenv(
