@@ -45,6 +45,12 @@ jobs:
           echo "FFMPEG_BIN=$FFMPEG_PATH" >> "$GITHUB_ENV"
           "$FFMPEG_PATH" -version
 
+      - name: Check backend FFmpeg environment
+        run: |
+          echo "FFMPEG_BIN=$FFMPEG_BIN"
+          python -c 'import os; print("PYTHON_FFMPEG_BIN=" + str(os.getenv("FFMPEG_BIN")))'
+          "$FFMPEG_BIN" -version
+
       - name: Start backend
         env:
           MOCK_MODE: "false"
